@@ -78,14 +78,14 @@ def _bot(w: int) -> str:
     return "`" + "-" * (w - 2) + "'"
 
 
-def _rank_top(rank: str, w: int) -> str:
+def _rank_top(rank: str, suit: str, w: int) -> str:
     inner = w - 2
-    return "|" + (" " + rank).ljust(inner) + "|"
+    return "|" + (" " + rank + suit).ljust(inner) + "|"
 
 
-def _rank_bot(rank: str, w: int) -> str:
+def _rank_bot(rank: str, suit: str, w: int) -> str:
     inner = w - 2
-    return "|" + (rank + " ").rjust(inner) + "|"
+    return "|" + (suit + rank + " ").rjust(inner) + "|"
 
 
 def _blank(w: int) -> str:
@@ -131,7 +131,8 @@ def make_card_lines(card: Card, size: CardSize) -> list[str]:
     for i in range(n_art):
         art.append(_suit(card.suit, w) if i == mid else _blank(w))
 
-    return [_top(w), _rank_top(rank, w), *art, _rank_bot(rank, w), _bot(w)]
+    suit = card.suit.value
+    return [_top(w), _rank_top(rank, suit, w), *art, _rank_bot(rank, suit, w), _bot(w)]
 
 
 def make_facedown_lines(size: CardSize) -> list[str]:
