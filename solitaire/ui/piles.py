@@ -8,6 +8,7 @@ from textual.widgets import Static
 from solitaire.assets.card_art import (
     CardSize,
     SIZES,
+    foundation_empty_frame,
     make_card_lines,
     make_facedown_lines,
     _empty_frame,
@@ -122,8 +123,8 @@ class FoundationWidget(Static):
     def _content(suit_idx: int, top_card: Card | None, size: CardSize) -> str:
         if top_card is not None:
             return _apply_color("\n".join(make_card_lines(top_card, size)), top_card)
-        label = FOUNDATION_SUITS[suit_idx].value
-        return "[dim]" + "\n".join(_empty_frame(size.width, size.height, label)) + "[/dim]"
+        suit = FOUNDATION_SUITS[suit_idx]
+        return "[dim]" + "\n".join(foundation_empty_frame(suit, size)) + "[/dim]"
 
     def set_state(
         self, top_card: Card | None, pile_len: int, selected: bool = False
