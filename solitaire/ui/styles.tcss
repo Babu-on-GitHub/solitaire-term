@@ -1,0 +1,85 @@
+/* Klondike Solitaire — terminal-native theme, card dimensions set programmatically */
+
+#game-board {
+    layout: vertical;
+    width: 100%;
+    height: 100%;
+    padding: 1 2;
+}
+
+/* ── Top row: stock+waste on left, foundations on right ─────────────── */
+
+#top-area {
+    height: auto;
+    width: 100%;
+    margin-bottom: 1;
+}
+
+#stock-waste {
+    width: auto;
+    height: auto;
+    align: left top;
+}
+
+#top-spacer {
+    width: 1fr;
+    height: auto;
+}
+
+#foundations {
+    width: auto;
+    height: auto;
+    align: right top;
+}
+
+/* ── Tableau ────────────────────────────────────────────────────────── */
+
+#tableau {
+    height: 1fr;
+    width: 100%;
+    align: left top;
+}
+
+TableauColumnWidget {
+    width: auto;
+    height: 100%;
+    margin: 0 1;
+    overflow-y: auto;
+}
+
+/* ── Card-sized widgets (width set in on_mount; height via auto) ────── */
+
+CardWidget {
+    height: auto;
+}
+
+CardWidget.selected {
+    background: $accent 70%;
+    color: $text;
+}
+
+StockWidget,
+WasteWidget {
+    height: auto;
+    margin: 0 1;
+}
+
+WasteWidget.selected {
+    background: $accent 70%;
+    color: $text;
+}
+
+FoundationWidget {
+    height: auto;
+    margin: 0 1;
+}
+
+FoundationWidget.selected {
+    background: $accent 70%;
+    color: $text;
+}
+
+EmptyPileWidget {
+    height: auto;
+    color: $surface-lighten-2;
+}
