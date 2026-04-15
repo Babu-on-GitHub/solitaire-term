@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import shutil
 from pathlib import Path
 
-from textual import on
+from textual import events, on
 from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal
 from textual.screen import ModalScreen
@@ -65,8 +64,7 @@ class SolitaireApp(App):
         super().__init__()
         self.engine = KlondikeEngine()
         self.selected_location: Location | None = None
-        term_w, _ = shutil.get_terminal_size()
-        self.card_size: CardSize = pick_size(term_w)
+        self.card_size: CardSize = pick_size()
 
     def compose(self) -> ComposeResult:
         state = self.engine.state
@@ -108,8 +106,23 @@ class SolitaireApp(App):
                     )
         yield Footer()
 
-    def on_mount(self) -> None:
+    async def on_mount(self) -> None:
+        correct_size = pick_size(self.size.width)
+        if correct_size != self.card_size:
+            self.card_size = correct_size
+            await self.recompose()
+        self._apply_top_area_height()
+
+    def _apply_top_area_height(self) -> None:
         self.query_one("#top-area").styles.height = self.card_size.height
+
+    async def on_resize(self, event: events.Resize) -> None:
+        new_size = pick_size(event.size.width)
+        if new_size != self.card_size:
+            self.card_size = new_size
+            self.selected_location = None
+            await self.recompose()
+            self._apply_top_area_height()
 
     def refresh_board(self) -> None:
         """Update all pile widgets to reflect current engine state."""
