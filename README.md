@@ -8,7 +8,7 @@ Klondike Solitaire in the terminal, built with [Textual](https://textual.textual
 
 - **Draw 1 or Draw 3** — choose the mode at the start of every new game
 - **Full ASCII card art** — five card sizes selected automatically from your terminal width, best played on the highest size.
-- **Mouse inputs** — play entirely by mouse, just like you used to on you mom's Windows XP desktop growing up.
+- **Mouse inputs** — play entirely by mouse, just like you used to do on your mom's Windows XP desktop growing up.
 
 ## Requirements
 
@@ -40,7 +40,7 @@ solitaire
 To install from GitHub:
 
 ```bash
-pip install git+https://github.com/your-username/solitaire-term.git
+pip install git+https://github.com/Babu-on-GitHub/solitaire-term.git
 solitaire
 ```
 
