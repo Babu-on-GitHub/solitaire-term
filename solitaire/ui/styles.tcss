@@ -1,11 +1,17 @@
-/* Klondike Solitaire — terminal-native theme, card dimensions set programmatically */
-
 #game-board {
     layout: vertical;
     width: 100%;
     height: 100%;
     padding: 1 2;
     overflow-y: auto;
+    border: round $primary;
+    border-title-align: center;
+    border-subtitle-align: center;
+    scrollbar-size-vertical: 1;
+    scrollbar-background: transparent;
+    scrollbar-color: $primary 40%;
+    scrollbar-color-hover: $primary;
+    scrollbar-color-active: $accent;
 }
 
 /* ── Top row: stock+waste on left, foundations on right ─────────────── */
@@ -55,7 +61,7 @@ CardWidget {
 }
 
 CardWidget.selected {
-    background: $accent 70%;
+    background: $accent 30% !important;
     color: $text;
 }
 
@@ -66,7 +72,7 @@ WasteWidget {
 }
 
 WasteWidget.selected {
-    background: $accent 70%;
+    background: $accent 30% !important;
     color: $text;
 }
 
@@ -76,11 +82,35 @@ FoundationWidget {
 }
 
 FoundationWidget.selected {
-    background: $accent 70%;
+    background: $accent 30% !important;
     color: $text;
 }
 
 EmptyPileWidget {
     height: auto;
-    color: $surface-lighten-2;
+    color: $surface;
+}
+
+/* ── Win Screen ─────────────────────────────────────────────────────── */
+
+WinScreen {
+    align: center middle;
+}
+
+WinScreen > Horizontal {
+    width: 44;
+    height: 9;
+    border: round $success;
+    align: center middle;
+    padding: 2 4;
+    background: $panel;
+}
+
+#win-title {
+    text-align: center;
+}
+
+#win-sub {
+    text-align: center;
+    color: $text-muted;
 }

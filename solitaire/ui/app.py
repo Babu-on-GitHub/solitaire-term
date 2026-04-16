@@ -20,23 +20,9 @@ from solitaire.ui.piles import (
 from solitaire.ui.widgets import CardWidget, EmptyPileWidget
 
 
-class WinScreen(ModalScreen):
-    DEFAULT_CSS = """
-    WinScreen {
-        align: center middle;
-    }
-    WinScreen > Horizontal {
-        width: 44;
-        height: 9;
-        border: double $success;
-        background: $surface;
-        align: center middle;
-        padding: 2 4;
-    }
-    #win-title { text-align: center; }
-    #win-sub { text-align: center; color: $text-muted; }
-    """
 
+
+class WinScreen(ModalScreen):
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield Static("[bold green] You Win! [/bold green]", id="win-title")
@@ -68,8 +54,9 @@ class SolitaireApp(App):
 
     def compose(self) -> ComposeResult:
         state = self.engine.state
-        yield Header()
-        with Container(id="game-board"):
+        with Container(id="game-board") as board:
+            board.border_title = " Klondike Solitaire "
+            board.border_subtitle = " q: Quit | r: New | u: Undo | enter: Draw "
             with Horizontal(id="top-area"):
                 with Horizontal(id="stock-waste"):
                     yield StockWidget(
@@ -104,9 +91,9 @@ class SolitaireApp(App):
                         size=self.card_size,
                         id=f"tableau-{col}",
                     )
-        yield Footer()
 
     async def on_mount(self) -> None:
+        self.theme = "textual-ansi"
         correct_size = pick_size(self.size.width)
         if correct_size != self.card_size:
             self.card_size = correct_size
