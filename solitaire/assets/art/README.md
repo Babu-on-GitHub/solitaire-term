@@ -6,12 +6,13 @@ One `.txt` file per rank per size. Edit freely — changes take effect on the ne
 
 Each file contains the **interior** lines only (no card borders, no rank corners).
 
-| Folder   | Lines | Chars/line | Card size  |
-|----------|------:|----------:|------------|
-| `small`  |     1 |         5 | 7 × 5      |
-| `medium` |     3 |         7 | 9 × 7      |
-| `large`  |     5 |         9 | 11 × 9     |
-| `xlarge` |     5 |        11 | 13 × 9     |
+| Folder    | Lines | Chars/line | Card size  |
+|-----------|------:|----------:|------------|
+| `small`   |     1 |         5 | 7 × 5      |
+| `medium`  |     3 |         7 | 9 × 7      |
+| `large`   |     5 |         9 | 11 × 9     |
+| `xlarge`  |     5 |        11 | 13 × 9     |
+| `xxlarge` |    10 |        15 | 17 × 14    |
 
 Lines or characters beyond the limits are silently cropped. Short lines are space-padded on the right.
 

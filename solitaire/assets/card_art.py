@@ -17,6 +17,7 @@ Interior art by size:
   medium (9×7,  3 interior lines) : ace shape, face-card box
   large  (11×9, 5 interior lines) : ace shape, face-card box w/ crown
   xlarge (13×9, 5 interior lines) : ace shape, pip grid, face-card box w/ crown
+  xxlarge (17x12 ...) : ...
 """
 
 from __future__ import annotations
@@ -52,6 +53,7 @@ class CardSize:
 # Largest-first so pick_size() can short-circuit on first match.
 # min_term_width = 7 * (width + 1) + 4  (7 cols, 1-char gap each, 2 pad sides)
 SIZES: tuple[CardSize, ...] = (
+    CardSize("xxlarge", 17, 12, 130),
     CardSize("xlarge", 13, 9, 102),
     CardSize("large",  11, 9,  88),
     CardSize("medium",  9, 7,  74),
@@ -248,7 +250,7 @@ def _load_card_art(rank_name: str, size: CardSize) -> tuple[str, ...] | None:
     Load interior art lines from ``solitaire/assets/art/<size>/<rank>.txt``.
 
     Returns a tuple of exactly ``size.height - 4`` strings, each exactly
-    ``size.width - 2`` chars wide (cropped / space-padded as needed).
+    ``size.width - 2`` chars wide, centered vertically and horizontally.
     Returns None if the file does not exist (caller falls back to generated art).
     """
     path = _ASSETS_DIR / "art" / size.name / f"{rank_name}.txt"
@@ -257,10 +259,33 @@ def _load_card_art(rank_name: str, size: CardSize) -> tuple[str, ...] | None:
     n     = size.height - 4
     inner = size.width - 2
     lines = path.read_text().splitlines()
-    lines = lines[:n]                           # crop excess height
-    while len(lines) < n:
-        lines.append("")                        # pad missing lines
-    return tuple(line[:inner].ljust(inner) for line in lines)
+    
+    # Vertically crop or pad
+    if len(lines) > n:
+        start = (len(lines) - n) // 2
+        lines = lines[start:start+n]
+    elif len(lines) < n:
+        pad_total = n - len(lines)
+        top_pad = pad_total // 2
+        bot_pad = pad_total - top_pad
+        lines = [""] * top_pad + lines + [""] * bot_pad
+
+    # Horizontally crop or pad the block
+    max_w = max((len(l) for l in lines), default=0)
+    padded_lines = []
+    if max_w > inner:
+        start_col = (max_w - inner) // 2
+        for l in lines:
+            l = l.ljust(max_w)
+            padded_lines.append(l[start_col:start_col+inner])
+    else:
+        left_pad = (inner - max_w) // 2
+        right_pad = inner - max_w - left_pad
+        for l in lines:
+            l = l.ljust(max_w)
+            padded_lines.append(" " * left_pad + l + " " * right_pad)
+            
+    return tuple(padded_lines)
 
 
 def reload_card_art() -> None:
@@ -278,21 +303,23 @@ def _card_interior(card: Card, size: CardSize) -> list[str]:
     n     = size.height - 4
     inner = size.width - 2
 
-    custom = _load_card_art(_RANK_NAMES[card.rank], size)
+    rank_name = _RANK_NAMES[card.rank]
+    suit_name = card.suit.name.lower()
+
+    # Priority: rank_suit -> rank -> default_suit -> default
+    custom = (
+        _load_card_art(f"{rank_name}_{suit_name}", size) or
+        _load_card_art(rank_name, size) or
+        _load_card_art(f"default_{suit_name}", size) or
+        _load_card_art("default", size)
+    )
+
     if custom is not None:
         return ["|" + line + "|" for line in custom]
 
+    # Fallback: centered suit symbol
     s = card.suit.value
-
-    if size.name == "small":
-        inner_lines: list[str] = [" " * inner] * n
-    elif card.rank == Rank.ACE:
-        inner_lines = _art_ace(s, n, inner)
-    elif card.rank.value <= 10:             # 2–10
-        inner_lines = _art_pip(s, card.rank.value, n, inner)
-    else:                                   # J, Q, K
-        inner_lines = _art_face(card.rank, n, inner)
-
+    inner_lines = [_centered(s, 1, inner)] * n
     return ["|" + line + "|" for line in inner_lines]
 
 
@@ -319,22 +346,27 @@ def make_facedown_lines(size: CardSize) -> list[str]:
 def foundation_empty_frame(suit: Suit, size: CardSize) -> list[str]:
     """
     Full card-height frame for an empty foundation slot.
-    Small size: centred suit symbol (simple).
-    Larger sizes: suit-art using the ace triangle pattern.
+    Uses custom Ace art for that suit if available, falls back to centered symbol.
     """
     w     = size.width
     h     = size.height
     inner = w - 2
-    s     = suit.value
+    suit_name = suit.name.lower()
 
-    if size.name == "small":
-        return _empty_frame(w, h, s)
+    # Try custom Ace art first
+    art = _load_card_art(f"ace_{suit_name}", size)
 
-    n_interior = h - 2                     # rows between top/bottom border
-    art_rows   = min(n_interior, 5)
-    art        = _art_ace(s, art_rows, inner)
+    if art is None:
+        # Fallback: simple centered suit symbol
+        s = suit.value
+        mid = (h - 2) // 2
+        lines = [_blank(w)] * (h - 2)
+        lines[mid] = "|" + s.center(inner) + "|"
+        return [_top(w), *lines, _bot(w)]
 
-    pad     = n_interior - art_rows
+    n_art = len(art)
+    n_interior = h - 2
+    pad = n_interior - n_art
     top_pad = pad // 2
     bot_pad = pad - top_pad
 
