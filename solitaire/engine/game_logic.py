@@ -21,6 +21,27 @@ class KlondikeEngine:
         self._undo_stack: list[MoveRecord] = []
         self.new_game()
 
+    def debug_near_win(self) -> None:
+        """Set up a state that is exactly 2 moves from winning.
+
+        Three suits are complete on foundations. Spades has A–J (11 cards).
+        Waste holds [K♠, Q♠] with Q♠ on top, so:
+          move 1: Q♠ waste → foundation (spades becomes A–Q)
+          move 2: K♠ waste → foundation (spades complete) → win
+        """
+        state = GameState()
+        for suit in (Suit.CLUBS, Suit.DIAMONDS, Suit.HEARTS):
+            idx = FOUNDATION_SUITS.index(suit)
+            state.foundations[idx] = [Card(rank, suit) for rank in Rank]
+        spades_idx = FOUNDATION_SUITS.index(Suit.SPADES)
+        state.foundations[spades_idx] = [
+            Card(rank, Suit.SPADES)
+            for rank in list(Rank)[:11]  # A through J
+        ]
+        state.waste = [Card(Rank.KING, Suit.SPADES), Card(Rank.QUEEN, Suit.SPADES)]
+        self.state = state
+        self._undo_stack.clear()
+
     def new_game(self) -> None:
         deck = Deck()
         deck.shuffle()

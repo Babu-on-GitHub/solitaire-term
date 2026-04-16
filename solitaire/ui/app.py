@@ -17,6 +17,7 @@ from solitaire.ui.piles import (
     TableauColumnWidget,
     WasteWidget,
 )
+from solitaire.assets.win_art import WIN_ART
 from solitaire.ui.widgets import CardWidget, EmptyPileWidget
 
 
@@ -24,15 +25,17 @@ from solitaire.ui.widgets import CardWidget, EmptyPileWidget
 
 class WinScreen(ModalScreen):
     def compose(self) -> ComposeResult:
-        with Horizontal():
-            yield Static("[bold green] You Win! [/bold green]", id="win-title")
-            yield Static("  Press any key to play again  ", id="win-sub")
+        with Horizontal(id="win-box"):
+            yield Static(WIN_ART, id="win-art")
+            yield Static("press any key to play again", id="win-sub")
 
     def on_key(self) -> None:
         self.dismiss()
+        self.app.action_new_game()
 
     def on_click(self) -> None:
         self.dismiss()
+        self.app.action_new_game()
 
 
 class SolitaireApp(App):
@@ -51,6 +54,7 @@ class SolitaireApp(App):
         self.engine = KlondikeEngine()
         self.selected_location: Location | None = None
         self.card_size: CardSize = pick_size()
+        self._game_won: bool = False
 
     def compose(self) -> ComposeResult:
         state = self.engine.state
@@ -108,8 +112,11 @@ class SolitaireApp(App):
         if new_size != self.card_size:
             self.card_size = new_size
             self.selected_location = None
+            was_won = self._game_won
             await self.recompose()
             self._apply_top_area_height()
+            if was_won and not isinstance(self.screen, WinScreen):
+                self._show_win_screen()
 
     def refresh_board(self) -> None:
         """Update all pile widgets to reflect current engine state."""
@@ -193,6 +200,7 @@ class SolitaireApp(App):
         self.exit()
 
     def action_new_game(self) -> None:
+        self._game_won = False
         self.selected_location = None
         self.engine.new_game()
         self.refresh_board()
@@ -211,7 +219,5 @@ class SolitaireApp(App):
         self.refresh_board()
 
     def _show_win_screen(self) -> None:
-        def _on_dismiss(_result: object) -> None:
-            self.action_new_game()
-
-        self.push_screen(WinScreen(), callback=_on_dismiss)
+        self._game_won = True
+        self.push_screen(WinScreen())

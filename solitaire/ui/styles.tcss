@@ -97,20 +97,24 @@ WinScreen {
     align: center middle;
 }
 
-WinScreen > Horizontal {
-    width: 44;
-    height: 9;
+#win-box {
+    width: auto;
+    height: auto;
     border: round $success;
     align: center middle;
-    padding: 2 4;
+    padding: 1 2;
     background: $panel;
 }
 
-#win-title {
-    text-align: center;
+#win-art {
+    width: auto;
+    color: $success;
 }
 
 #win-sub {
-    text-align: center;
+    width: auto;
+    height: auto;
+    align: center middle;
+    padding: 0 2;
     color: $text-muted;
 }
