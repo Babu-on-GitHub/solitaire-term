@@ -73,3 +73,15 @@ In Draw-3 mode the waste pile shows the top three cards: the back two are peeked
 ```bash
 uv run pytest
 ```
+
+## Customising
+
+This project is intentionally small and self-contained — fork it and make it yours.
+
+- **Card art** — drop `.txt` files into `solitaire/assets/art/<size>/`. The loader picks them up on the next run. See [`solitaire/assets/art/README.md`](solitaire/assets/art/README.md) for the naming scheme and how centering/cropping works.
+- **Colors, layout, and theme** — everything visual lives in `solitaire/ui/styles.tcss` (CSS-like syntax for spacing, borders, and colors) and `solitaire/ui/app.py` (where the Textual theme is set).
+- **Game rules and new features** — the engine in `solitaire/engine/` is pure Python with no UI dependencies, so it's straightforward to extend. Start from `game_logic.py` for rules and `app.py` for wiring new interactions to the UI.
+
+## License
+
+MIT — do whatever you want with it.
