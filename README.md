@@ -24,17 +24,24 @@ The game auto-selects the largest card size that fits your terminal. Resize the 
 
 ## Running
 
-Install dependencies and launch with [uv](https://github.com/astral-sh/uv):
+Install and launch with [uv](https://github.com/astral-sh/uv):
 
 ```bash
-uv run python main.py
+uv run solitaire
 ```
 
-Or with a plain Python environment:
+Or install with pip and run the command directly:
 
 ```bash
-pip install textual
-python main.py
+pip install .
+solitaire
+```
+
+To install from GitHub:
+
+```bash
+pip install git+https://github.com/your-username/solitaire-term.git
+solitaire
 ```
 
 ## Controls
