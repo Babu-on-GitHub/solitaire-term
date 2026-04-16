@@ -4,9 +4,9 @@ from pathlib import Path
 
 from textual import events, on
 from textual.app import App, ComposeResult
-from textual.containers import Container, Horizontal
+from textual.containers import Container, Horizontal, Vertical
 from textual.screen import ModalScreen
-from textual.widgets import Footer, Header, Static
+from textual.widgets import Button, Footer, Header, Static
 
 from solitaire.assets.card_art import CardSize, pick_size
 from solitaire.engine.game_logic import KlondikeEngine
@@ -21,6 +21,26 @@ from solitaire.assets.win_art import WIN_ART
 from solitaire.ui.widgets import CardWidget, EmptyPileWidget
 
 
+
+
+class DrawModeScreen(ModalScreen):
+    """Modal dialog shown at every new game start to choose draw mode."""
+
+    def compose(self) -> ComposeResult:
+        with Vertical(id="draw-mode-box"):
+            yield Static("New Game", id="draw-mode-title")
+            with Horizontal(id="draw-mode-buttons"):
+                yield Button("Draw 1", id="draw1", variant="primary")
+                yield Button("Draw 3", id="draw3", variant="default")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        self.dismiss(1 if event.button.id == "draw1" else 3)
+
+    def on_key(self, event: events.Key) -> None:
+        if event.key == "1":
+            self.dismiss(1)
+        elif event.key == "3":
+            self.dismiss(3)
 
 
 class WinScreen(ModalScreen):
@@ -69,8 +89,8 @@ class SolitaireApp(App):
                         id="stock",
                     )
                     yield WasteWidget(
-                        top_card=state.waste_top(),
-                        waste_top_index=len(state.waste) - 1,
+                        waste=state.waste,
+                        draw_mode=state.draw_mode,
                         size=self.card_size,
                         id="waste",
                     )
@@ -103,6 +123,7 @@ class SolitaireApp(App):
             self.card_size = correct_size
             await self.recompose()
         self._apply_top_area_height()
+        await self.push_screen(DrawModeScreen(), self._on_draw_mode_selected)
 
     def _apply_top_area_height(self) -> None:
         self.query_one("#top-area").styles.height = self.card_size.height
@@ -138,7 +159,7 @@ class SolitaireApp(App):
 
         self.query_one("#stock", StockWidget).set_state(bool(state.stock))
         self.query_one("#waste", WasteWidget).set_state(
-            state.waste_top(), len(state.waste) - 1, selected=waste_sel
+            state.waste, state.draw_mode, selected=waste_sel
         )
         for i in range(4):
             pile = state.foundations[i]
@@ -199,10 +220,13 @@ class SolitaireApp(App):
     def action_quit(self) -> None:
         self.exit()
 
-    def action_new_game(self) -> None:
+    async def action_new_game(self) -> None:
+        await self.push_screen(DrawModeScreen(), self._on_draw_mode_selected)
+
+    def _on_draw_mode_selected(self, draw_mode: int) -> None:
         self._game_won = False
         self.selected_location = None
-        self.engine.new_game()
+        self.engine.new_game(draw_mode)
         self.refresh_board()
 
     def action_undo(self) -> None:

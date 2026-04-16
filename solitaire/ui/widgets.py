@@ -18,10 +18,11 @@ from solitaire.engine.moves import Location
 
 
 def _apply_color(text: str, card: Card) -> str:
-    """Wrap card art in red markup for red suits."""
+    """Wrap card art in red markup for red suits. Escapes [ so it isn't parsed as a markup tag."""
+    safe = text.replace("[", r"\[")
     if card.is_red:
-        return f"[red]{text}[/red]"
-    return text
+        return f"[red]{safe}[/red]"
+    return safe
 
 
 class CardWidget(Static):

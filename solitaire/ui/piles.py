@@ -19,6 +19,9 @@ from solitaire.engine.state import FOUNDATION_SUITS
 from solitaire.ui.widgets import CardWidget, EmptyPileWidget, _apply_color
 
 
+PEEK_WIDTH = 5  # columns shown per peeked waste card (rank + suit visible for all ranks incl "10")
+
+
 class StockWidget(Static):
     """The draw pile. Click to draw one card or recycle the waste."""
 
@@ -50,7 +53,7 @@ class StockWidget(Static):
 
 
 class WasteWidget(Static):
-    """Shows only the top card of the waste pile."""
+    """Shows the top card(s) of the waste pile. In draw-3 mode shows up to 3 cards fanned."""
 
     class Clicked(Message):
         def __init__(self, location: Location) -> None:
@@ -59,41 +62,82 @@ class WasteWidget(Static):
 
     def __init__(
         self,
-        top_card: Card | None,
-        waste_top_index: int,
+        waste: list[Card],
+        draw_mode: int = 1,
         size: CardSize | None = None,
         **kwargs,
     ) -> None:
         self._card_size = size if size is not None else SIZES[-1]
-        super().__init__(self._content(top_card, self._card_size), **kwargs)
-        self._top_card = top_card
-        self._index = waste_top_index
+        self._draw_mode = draw_mode
+        self._waste = list(waste)
+        super().__init__(self._content(waste, draw_mode, self._card_size), **kwargs)
 
     @staticmethod
-    def _content(top_card: Card | None, size: CardSize) -> str:
-        if top_card is not None:
-            return _apply_color("\n".join(make_card_lines(top_card, size)), top_card)
-        return "[dim]" + "\n".join(_empty_frame(size.width, size.height)) + "[/dim]"
+    def _content(waste: list[Card], draw_mode: int, size: CardSize) -> str:
+        top_card = waste[-1] if waste else None
+        if draw_mode == 1:
+            if top_card is not None:
+                return _apply_color("\n".join(make_card_lines(top_card, size)), top_card)
+            return "[dim]" + "\n".join(_empty_frame(size.width, size.height)) + "[/dim]"
+
+        # Draw-3: composite display (up to 2 peeked + 1 full)
+        if top_card is None:
+            empty = _empty_frame(size.width, size.height)
+            lines = [" " * (PEEK_WIDTH * 2) + ln for ln in empty]
+            return "[dim]" + "\n".join(lines) + "[/dim]"
+
+        peeked = waste[max(0, len(waste) - 3):-1] if len(waste) > 1 else []
+        empty_slots = 2 - len(peeked)
+        top_lines = make_card_lines(top_card, size)
+
+        def _safe_peek_lines(card: Card, sz: CardSize) -> list[str]:
+            """Simple border+rank lines for peeked cards — no [, ], or \\ chars."""
+            full = make_card_lines(card, sz)
+            blank = "|" + " " * (sz.width - 2) + "|"
+            return [full[0], full[1], *[blank] * (sz.height - 4), full[-2], full[-1]]
+
+        peeked_art = [_safe_peek_lines(c, size) for c in peeked]
+
+        def color(text: str, card: Card) -> str:
+            safe = text.replace("[", r"\[")
+            return f"[red]{safe}[/red]" if card.is_red else safe
+
+        result = []
+        for row in range(size.height):
+            line = " " * (PEEK_WIDTH * empty_slots)
+            for card, art in zip(peeked, peeked_art):
+                line += color(art[row][:PEEK_WIDTH], card)
+            line += color(top_lines[row], top_card)
+            result.append(line)
+        return "\n".join(result)
+
+    def _widget_width(self) -> int:
+        if self._draw_mode == 3:
+            return PEEK_WIDTH * 2 + self._card_size.width
+        return self._card_size.width
 
     def set_state(
-        self, top_card: Card | None, waste_top_index: int, selected: bool = False
+        self, waste: list[Card], draw_mode: int, selected: bool = False
     ) -> None:
-        self._top_card = top_card
-        self._index = waste_top_index
-        self.update(self._content(top_card, self._card_size))
+        self._waste = list(waste)
+        self._draw_mode = draw_mode
+        top_card = waste[-1] if waste else None
+        self.update(self._content(waste, draw_mode, self._card_size))
+        self.styles.width = self._widget_width()
         if selected and top_card is not None:
             self.add_class("selected")
         else:
             self.remove_class("selected")
 
     def on_mount(self) -> None:
-        self.styles.width = self._card_size.width
+        self.styles.width = self._widget_width()
         self.styles.height = self._card_size.height
 
     def on_click(self) -> None:
-        if self._top_card is not None:
+        top_card = self._waste[-1] if self._waste else None
+        if top_card is not None:
             self.post_message(
-                WasteWidget.Clicked(Location(PileType.WASTE, 0, self._index))
+                WasteWidget.Clicked(Location(PileType.WASTE, 0, len(self._waste) - 1))
             )
 
 

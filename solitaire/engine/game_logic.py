@@ -42,7 +42,7 @@ class KlondikeEngine:
         self.state = state
         self._undo_stack.clear()
 
-    def new_game(self) -> None:
+    def new_game(self, draw_mode: int = 1) -> None:
         deck = Deck()
         deck.shuffle()
         state = GameState()
@@ -52,6 +52,7 @@ class KlondikeEngine:
             state.face_up_counts[col] = 1
         while len(deck) > 0:
             state.stock.append(deck.draw())
+        state.draw_mode = draw_mode
         self.state = state
         self._undo_stack.clear()
 
@@ -64,7 +65,9 @@ class KlondikeEngine:
             prev_stock=self.state.stock.copy(),
             prev_waste=self.state.waste.copy(),
         )
-        self.state.waste.append(self.state.stock.pop())
+        count = min(self.state.draw_mode, len(self.state.stock))
+        for _ in range(count):
+            self.state.waste.append(self.state.stock.pop())
         self._push_undo(record)
         return True
 

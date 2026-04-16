@@ -36,6 +36,7 @@ class GameState:
     face_up_counts: list[int] = field(
         default_factory=lambda: [0] * 7
     )
+    draw_mode: int = 1
 
     # --- Tableau helpers ---
 
