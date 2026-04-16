@@ -30,7 +30,7 @@ class DrawModeScreen(ModalScreen):
         with Vertical(id="draw-mode-box"):
             yield Static("New Game", id="draw-mode-title")
             with Horizontal(id="draw-mode-buttons"):
-                yield Button("Draw 1", id="draw1", variant="primary")
+                yield Button("Draw 1", id="draw1", variant="default")
                 yield Button("Draw 3", id="draw3", variant="default")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
