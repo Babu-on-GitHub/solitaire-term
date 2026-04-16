@@ -138,17 +138,22 @@ wheels = [
 [[package]]
 name = "solitaire-term"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
-    { name = "pytest" },
     { name = "textual" },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "pytest" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "pytest", specifier = ">=9.0.3" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.0.3" },
     { name = "textual", specifier = ">=8.2.3" },
 ]
+provides-extras = ["dev"]
 
 [[package]]
 name = "textual"
