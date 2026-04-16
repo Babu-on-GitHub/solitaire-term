@@ -5,6 +5,7 @@
     width: 100%;
     height: 100%;
     padding: 1 2;
+    overflow-y: auto;
 }
 
 /* ── Top row: stock+waste on left, foundations on right ─────────────── */
@@ -35,16 +36,16 @@
 /* ── Tableau ────────────────────────────────────────────────────────── */
 
 #tableau {
-    height: 1fr;
+    height: auto;
     width: 100%;
     align: left top;
 }
 
 TableauColumnWidget {
     width: auto;
-    height: 100%;
+    height: auto;
     margin: 0 1;
-    overflow-y: auto;
+    overflow-y: hidden;
 }
 
 /* ── Card-sized widgets (width set in on_mount; height via auto) ────── */
